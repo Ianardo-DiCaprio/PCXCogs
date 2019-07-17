@@ -21,7 +21,7 @@ class BanCheck(commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=1224364860)
         self.config.register_guild(**self.default_guild_settings)
-        self.conf.register_global(services=None)
+        self.config.register_global(services=None)
 
     @commands.group()
     @commands.guild_only()
