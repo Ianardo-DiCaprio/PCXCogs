@@ -12,7 +12,7 @@ __author__ = "PhasecoreX"
 class BanCheck(commands.Cog):
     """Look up users on various ban lists."""
 
-    default_guild_settings = {"channel": None, "services": {}}
+    default_guild_settings = {"channel": None}
     supported_services = {"globan": globan, "ksoftsi": ksoftsi}
 
     def __init__(self, bot):
@@ -21,6 +21,7 @@ class BanCheck(commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=1224364860)
         self.config.register_guild(**self.default_guild_settings)
+        self.conf.register_global(services=None)
 
     @commands.group()
     @commands.guild_only()
@@ -32,11 +33,11 @@ class BanCheck(commands.Cog):
             if channel_id:
                 channel_name = self.bot.get_channel(channel_id).name
             services_list = ""
-            services = await self.config.guild(ctx.message.guild).services()
+            services = await self.config.services()
             for service in services.copy():
                 if service not in self.supported_services:
                     services.pop(service, None)
-                    await self.config.guild(ctx.message.guild).services.set(services)
+                    await self.config.services.set(services)
                     continue
                 services_list += "\n  - {}".format(
                     self.supported_services[service].SERVICE_NAME
@@ -59,13 +60,13 @@ class BanCheck(commands.Cog):
                 )
             )
             return
-        services = await self.config.guild(ctx.message.guild).services()
+        services = await self.config.services()
         update = True
         if service not in services:
             services[service] = {}
             update = False
         services[service]["api_key"] = api
-        await self.config.guild(ctx.message.guild).services.set(services)
+        await self.config.services.set(services)
         if update:
             await ctx.send(
                 "Successfully updated the {} API key!".format(
@@ -83,9 +84,9 @@ class BanCheck(commands.Cog):
     @checks.admin_or_permissions(manage_guild=True)
     async def disableservice(self, ctx: commands.Context, service: str):
         """Delete a service api key in order to disable it."""
-        services = await self.config.guild(ctx.message.guild).services()
+        services = await self.config.services()
         if services.pop(service, None):
-            await self.config.guild(ctx.message.guild).services.set(services)
+            await self.config.services.set(services)
             niceName = service
             try:
                 niceName = self.supported_services[service].SERVICE_NAME
@@ -148,7 +149,7 @@ class BanCheck(commands.Cog):
 
     async def user_lookup(self, channel: discord.TextChannel, member: discord.Member):
         """Perform user lookup, and send results to a specific channel."""
-        services = await self.config.guild(channel.guild).services()
+        services = await self.config.services()
         is_banned = False
         is_error = False
         checked = []
