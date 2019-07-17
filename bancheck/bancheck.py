@@ -31,7 +31,7 @@ class BanCheck(commands.Cog):
             channel_name = "Disabled"
             channel_id = await self.config.guild(ctx.message.guild).channel()
             if channel_id:
-                channel_name = self.bot.get_channel(channel_id).name
+                channel_name = self.bot.get_channel(channel_id)
             services_list = ""
             services = await self.config.services()
             for service in services.copy():
